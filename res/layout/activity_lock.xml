@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FF111111"
+    android:padding="48dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="今日使用时间已用完"
+        android:textSize="44sp"
+        android:textColor="#FFFFFFFF"
+        android:layout_marginBottom="24dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="请输入管理员密码解锁"
+        android:textSize="24sp"
+        android:textColor="#FFCCCCCC"
+        android:layout_marginBottom="24dp" />
+
+    <EditText
+        android:id="@+id/pw"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:inputType="numberPassword"
+        android:hint="管理员密码"
+        android:textSize="28sp"
+        android:textColor="#FFFFFFFF"
+        android:textColorHint="#FF888888"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/ok"
+        android:layout_width="360dp"
+        android:layout_height="wrap_content"
+        android:text="解锁"
+        android:textSize="24sp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/err"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="22sp"
+        android:textColor="#FFFF5252" />
+</LinearLayout>

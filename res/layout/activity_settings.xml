@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="48dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="每日可用时长（分钟）"
+            android:textSize="24sp"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/minutes"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textSize="26sp"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="修改后明天 0 点生效"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/save"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:text="保存每日时长"
+            android:textSize="22sp"
+            android:layout_marginBottom="32dp" />
+
+        <Button
+            android:id="@+id/chpw"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:text="修改管理员密码"
+            android:textSize="22sp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/add30"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:text="今日加时 30 分钟"
+            android:textSize="22sp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/resetday"
+            android:layout_width="360dp"
+            android:layout_height="wrap_content"
+            android:text="重置今日计时"
+            android:textSize="22sp"
+            android:layout_marginBottom="32dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="初始管理员密码：112233"
+            android:textSize="18sp" />
+    </LinearLayout>
+</ScrollView>

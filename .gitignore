@@ -1,0 +1,13 @@
+# 构建产物
+*.apk
+*.idsig
+*.keystore
+classes/
+dex/
+gen/
+res.zip
+sources.txt
+
+# 系统文件
+.DS_Store
+Thumbs.db
