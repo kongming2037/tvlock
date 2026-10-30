@@ -9,22 +9,18 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.view.Gravity;
-import android.view.WindowManager;
-import android.widget.TextView;
 import java.util.List;
 
 public class TimerService extends Service {
     public static final String ACTION_UPDATE = "com.yongge.tvlock.UPDATE";
 
     private Handler handler;
-    private TextView overlayView;
-    private WindowManager wm;
+    private NotificationManager nm;
+    private String chId = "tvlock";
     private int remainingSec;
     private long deadline;
     private boolean locked;
@@ -40,29 +36,41 @@ public class TimerService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        String chId = "tvlock";
-        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= 26) {
             NotificationChannel ch = new NotificationChannel(chId, "计时服务", NotificationManager.IMPORTANCE_MIN);
             nm.createNotificationChannel(ch);
         }
+        startForeground(1, buildNotification("计时服务运行中"));
+
+        loadState();
+        KeepAliveReceiver.schedule(this);
+        handler = new Handler(Looper.getMainLooper());
+        handler.post(tick);
+    }
+
+    private Notification buildNotification(String text) {
         Intent pi = new Intent(this, MainActivity.class);
         int flags = PendingIntent.FLAG_UPDATE_CURRENT;
         if (Build.VERSION.SDK_INT >= 23) flags |= PendingIntent.FLAG_IMMUTABLE;
         PendingIntent p = PendingIntent.getActivity(this, 0, pi, flags);
-        Notification n = new Notification.Builder(this, chId)
+        return new Notification.Builder(this, chId)
                 .setContentTitle("屏幕计时")
-                .setContentText("计时服务运行中")
+                .setContentText(text)
                 .setSmallIcon(android.R.drawable.ic_lock_idle_lock)
                 .setContentIntent(p)
                 .build();
-        startForeground(1, n);
+    }
 
-        loadState();
-        addOverlay();
-        KeepAliveReceiver.schedule(this);
-        handler = new Handler(Looper.getMainLooper());
-        handler.post(tick);
+    private void updateNotification() {
+        String t;
+        if (locked) t = "已锁定";
+        else if (override) t = "今日已解锁";
+        else t = "剩余 " + Prefs.fmt(remainingSec);
+        try {
+            nm.notify(1, buildNotification(t));
+        } catch (Exception ignored) {
+        }
     }
 
     @Override
@@ -89,7 +97,7 @@ public class TimerService extends Service {
                 setTimer(Prefs.getDailyLimitMin(this));
                 saveState();
             }
-            updateOverlay();
+            updateNotification();
             broadcastUpdate();
         }
         // 注意：不用 START_STICKY。MIUI 会把频繁自重启视为异常而加剧猎杀；
@@ -101,12 +109,6 @@ public class TimerService extends Service {
     public void onDestroy() {
         super.onDestroy();
         if (handler != null) handler.removeCallbacks(tick);
-        if (wm != null && overlayView != null) {
-            try {
-                wm.removeView(overlayView);
-            } catch (Exception ignored) {
-            }
-        }
     }
 
     private final Runnable tick = new Runnable() {
@@ -135,7 +137,7 @@ public class TimerService extends Service {
                 } else if (locked) {
                     enforceLock();
                 }
-                updateOverlay();
+                updateNotification();
                 tickCount++;
                 if (tickCount % 5 == 0) broadcastUpdate();
             } catch (Exception ignored) {
@@ -147,7 +149,7 @@ public class TimerService extends Service {
     private void enterLocked() {
         locked = true;
         saveState();
-        updateOverlay();
+        updateNotification();
         Intent i = new Intent(this, LockActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         try {
@@ -219,44 +221,6 @@ public class TimerService extends Service {
     private void setTimer(int minutes) {
         remainingSec = minutes * 60;
         deadline = System.currentTimeMillis() + remainingSec * 1000L;
-    }
-
-    private void addOverlay() {
-        try {
-            wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-            overlayView = new TextView(this);
-            overlayView.setTextSize(20);
-            overlayView.setTextColor(0xFFFFFFFF);
-            overlayView.setBackgroundColor(0x99000000);
-            float d = getResources().getDisplayMetrics().density;
-            int pad = (int) (10 * d + 0.5f);
-            overlayView.setPadding(pad, (int) (6 * d + 0.5f), pad, (int) (6 * d + 0.5f));
-            WindowManager.LayoutParams p = new WindowManager.LayoutParams(
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-                            | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                    PixelFormat.TRANSLUCENT);
-            p.gravity = Gravity.TOP | Gravity.END;
-            p.x = (int) (24 * d + 0.5f);
-            p.y = (int) (24 * d + 0.5f);
-            wm.addView(overlayView, p);
-            updateOverlay();
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void updateOverlay() {
-        if (overlayView == null) return;
-        try {
-            String t;
-            if (locked) t = "已锁定";
-            else if (override) t = "今日已解锁";
-            else t = "剩余 " + Prefs.fmt(remainingSec);
-            overlayView.setText(t);
-        } catch (Exception ignored) {
-        }
     }
 
     private void broadcastUpdate() {

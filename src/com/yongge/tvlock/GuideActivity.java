@@ -82,13 +82,7 @@ public class GuideActivity extends Activity {
     private void refresh() {
         rows.removeAllViews();
         final String pkg = getPackageName();
-        addRow("1. 悬浮窗权限",
-                "倒计时显示在屏幕右上角",
-                hasOverlay(),
-                () -> startActivity(new Intent(
-                        Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                        Uri.parse("package:" + pkg))));
-        addRow("2. 使用情况访问权限",
+        addRow("1. 使用情况访问权限",
                 "计时结束时锁定其它应用",
                 hasUsageStats(),
                 () -> startActivity(new Intent(
@@ -98,13 +92,13 @@ public class GuideActivity extends Activity {
                 Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                 Uri.parse("package:" + pkg));
         if (canHandle(battIntent)) {
-            addRow("3. 忽略电池优化",
+            addRow("2. 忽略电池优化",
                     "防止系统杀掉计时服务",
                     hasBattOpt(),
                     () -> startActivity(battIntent));
         }
         boolean svc = isServiceRunning();
-        addRow(canHandle(battIntent) ? "4. 计时服务" : "3. 计时服务",
+        addRow(canHandle(battIntent) ? "3. 计时服务" : "2. 计时服务",
                 svc ? "运行中" : "未运行",
                 svc,
                 () -> startForegroundService(new Intent(
@@ -159,10 +153,6 @@ public class GuideActivity extends Activity {
         rows.addView(row);
     }
 
-    private boolean hasOverlay() {
-        return Settings.canDrawOverlays(this);
-    }
-
     private boolean hasUsageStats() {
         AppOpsManager am = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
         int mode = am.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
@@ -185,9 +175,8 @@ public class GuideActivity extends Activity {
         return false;
     }
 
-    /** 关键权限（悬浮窗＋使用情况）是否齐全，供 MainActivity 自动弹出向导用 */
+    /** 关键权限（使用情况访问）是否齐全，供 MainActivity 自动弹出向导用 */
     public static boolean criticalGranted(Context c) {
-        if (!Settings.canDrawOverlays(c)) return false;
         AppOpsManager am = (AppOpsManager) c.getSystemService(Context.APP_OPS_SERVICE);
         int mode = am.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS,
                 Process.myUid(), c.getPackageName());
