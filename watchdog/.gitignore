@@ -1,0 +1,11 @@
+*.keystore
+*.apk
+assets/main.apk
+gen/
+classes/
+dex/
+*.zip
+sources.txt
+app-*.apk
+res.zip
+assets.zip

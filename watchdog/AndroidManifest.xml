@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.yongge.tvlock.watchdog"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application
+        android:label="看门狗"
+        android:icon="@drawable/ic_watchdog"
+        android:allowBackup="false">
+
+        <!-- 管理界面：带图标，密码验证后可停用看门功能 -->
+        <activity android:name=".WatchdogActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 看门狗服务：exported 供主 App 拉起 -->
+        <service android:name=".WatchdogService"
+            android:exported="true" />
+
+        <receiver android:name=".BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".InstallReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.yongge.tvlock.watchdog.INSTALL_COMPLETE" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>
