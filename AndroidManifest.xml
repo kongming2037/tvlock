@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.yongge.tvlock">
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -34,6 +35,11 @@
         <activity android:name=".GuideActivity" android:exported="false" />
 
         <service android:name=".TimerService" android:exported="true" />
+
+        <!-- 倒计时弹窗：独立进程，被 MIUI 猎杀时不连累主进程 -->
+        <service android:name=".PopupService"
+            android:process=":popup"
+            android:exported="false" />
 
         <receiver android:name=".AdminReceiver"
             android:permission="android.permission.BIND_DEVICE_ADMIN"

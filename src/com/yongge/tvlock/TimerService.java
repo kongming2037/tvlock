@@ -140,11 +140,28 @@ public class TimerService extends Service {
                 updateNotification();
                 tickCount++;
                 if (tickCount % 5 == 0) broadcastUpdate();
+                // 每分钟弹一次倒计时窗口（独立进程，被杀不连累主进程）
+                if (tickCount % 60 == 0) showPopup();
             } catch (Exception ignored) {
             }
             handler.postDelayed(this, 1000);
         }
     };
+
+    /** 启动独立进程的倒计时弹窗，显示 10 秒自动销毁 */
+    private void showPopup() {
+        try {
+            // 锁定状态下 LockActivity 全屏，不弹
+            if (locked) return;
+            String text;
+            if (override) text = "今日已解锁";
+            else text = Prefs.fmt(remainingSec) + "后锁定";
+            Intent i = new Intent(this, PopupService.class);
+            i.putExtra("text", text);
+            startService(i);
+        } catch (Exception ignored) {
+        }
+    }
 
     private void enterLocked() {
         locked = true;
