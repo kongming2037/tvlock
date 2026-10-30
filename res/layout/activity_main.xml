@@ -2,39 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:gravity="center"
+    android:padding="32dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="48dp">
+    android:background="#FF222222">
 
     <TextView
         android:id="@+id/status"
+        android:textSize="20sp"
+        android:textColor="#FFFFFFFF"
+        android:gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="28sp"
-        android:gravity="center"
-        android:layout_marginBottom="48dp"
-        android:text="读取中..." />
+        android:text="状态" />
 
     <Button
         android:id="@+id/btn_settings"
-        android:layout_width="360dp"
-        android:layout_height="wrap_content"
-        android:text="进入设置"
-        android:textSize="24sp"
-        android:layout_marginBottom="24dp" />
-
-    <Button
-        android:id="@+id/btn_locknow"
-        android:layout_width="360dp"
-        android:layout_height="wrap_content"
-        android:text="立即锁定"
-        android:textSize="24sp"
-        android:layout_marginBottom="24dp" />
-
-    <Button
-        android:id="@+id/btn_guide"
-        android:layout_width="360dp"
-        android:layout_height="wrap_content"
-        android:text="权限设置向导"
-        android:textSize="24sp" />
+        android:text="设置"
+        android:textSize="20sp"
+        android:textColor="#FFFFFFFF"
+        android:background="@drawable/btn_selector"
+        android:layout_marginTop="32dp"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content" />
 </LinearLayout>

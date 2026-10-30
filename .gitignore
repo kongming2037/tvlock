@@ -1,13 +1,10 @@
-# 构建产物
-*.apk
-*.idsig
 *.keystore
+*.apk
+*.ap_
+gen/
 classes/
 dex/
-gen/
-res.zip
+*.zip
 sources.txt
-
-# 系统文件
-.DS_Store
-Thumbs.db
+app-*.apk
+res.zip

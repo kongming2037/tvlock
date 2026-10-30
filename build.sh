@@ -1,55 +1,40 @@
 #!/bin/bash
-# Manual APK build: aapt2 -> javac -> d8 -> zipalign -> apksigner (no Gradle)
 set -e
 cd "$(dirname "$0")"
-SDK=/home/hatch/workspace/android-sdk
+SDK=~/workspace/android-sdk
 BT=$SDK/build-tools/34.0.0
-AJAR=$SDK/platforms/android-34/android.jar
-export JAVA_HOME=$SDK/jdk-17.0.20.1+1
-export PATH=$JAVA_HOME/bin:$PATH
-KSPASS=tvlock2026
+PL=$SDK/platforms/android-34
+KEYSTORE=~/workspace/tvlock2/tvlock2.keystore
+ALIAS=tvlock
+PASS=tvlock2026
 
-rm -rf gen classes dex res.zip app-unsigned.apk tvlock.apk tvlock-signed.apk sources.txt
+rm -rf gen classes dex
 mkdir -p gen classes dex
 
-echo "== aapt2 compile =="
+# R.java
 $BT/aapt2 compile --dir res -o res.zip
-echo "== aapt2 link =="
-$BT/aapt2 link -o app-unsigned.apk -I "$AJAR" --manifest AndroidManifest.xml --java gen \
-  --min-sdk-version 26 --target-sdk-version 28 res.zip
+$BT/aapt2 link -o app-unsigned.apk -I $PL/android.jar \
+  --manifest AndroidManifest.xml --java gen \
+  --min-sdk-version 21 --target-sdk-version 29 \
+  res.zip
 
-echo "== javac =="
-find src gen -name "*.java" > sources.txt
-javac -encoding UTF-8 -source 8 -target 8 -nowarn -cp "$AJAR" -d classes @sources.txt
+# Java
+find gen src -name "*.java" > sources.txt
+javac -encoding UTF-8 -source 8 -target 8 -bootclasspath $PL/android.jar \
+  -d classes @sources.txt
 
-echo "== d8 =="
-$BT/d8 --lib "$AJAR" --min-api 26 --output dex $(find classes -name "*.class")
-ls dex/
+# DEX
+$BT/d8 --output dex/ --lib $PL/android.jar $(find classes -name "*.class")
 
-echo "== add classes.dex =="
-python3 -c "
-import zipfile
-z = zipfile.ZipFile('app-unsigned.apk', 'a', zipfile.ZIP_DEFLATED)
-z.write('dex/classes.dex', 'classes.dex')
-z.close()
-"
+# APK: use aapt to add dex (preserves arsc alignment)
+cp app-unsigned.apk app-final.apk
+$BT/aapt add -k app-final.apk dex/classes.dex 2>&1 | head -2
 
-echo "== zipalign =="
-$BT/zipalign -f 4 app-unsigned.apk tvlock.apk
+# Sign with jarsigner (more compatible)
+export PATH=~/workspace/android-sdk/jdk-17.0.20.1+1/bin:$PATH
+jarsigner -keystore $KEYSTORE -storepass $PASS -keypass $PASS \
+  -signedjar tvlock-signed.apk app-final.apk $ALIAS 2>&1 | head -3
 
-if [ ! -f tvlock.keystore ]; then
-  echo "== gen keystore =="
-  keytool -genkeypair -keystore tvlock.keystore -alias tvlock -keyalg RSA -keysize 2048 \
-    -validity 10950 -storepass $KSPASS -keypass $KSPASS \
-    -dname "CN=TVLock, OU=Home, O=Home, L=Home, ST=Home, C=CN" 2>/dev/null
-  chmod 600 tvlock.keystore
-fi
-
-echo "== apksigner =="
-$BT/apksigner sign --ks tvlock.keystore --ks-pass pass:$KSPASS --out tvlock-signed.apk tvlock.apk
-$BT/apksigner verify --print-certs tvlock-signed.apk | head -6
-
-echo "== badging =="
-$BT/aapt2 dump badging tvlock-signed.apk | head -8
-ls -la tvlock-signed.apk
+$BT/aapt dump badging tvlock-signed.apk | grep -E "package|launchable|uses-permission" | head -12
+ls -lh tvlock-signed.apk
 echo BUILD_OK
